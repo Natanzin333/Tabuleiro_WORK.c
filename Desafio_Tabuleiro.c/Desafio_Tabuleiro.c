@@ -1,167 +1,181 @@
 #include <stdio.h>
+#include <stdlib.h>
+
+//Definindo constantes
+#define TAMANHO_TABULEIRO 10
+#define AFETADO_CONE 5
+#define AFETADO_CRUZ 1
+#define AFETADO_OCTAEDRO 7
+#define AGUA 0
+
+// Função para calcular o valor absoluto de um número inteiro
+int valorAbsoluto(int x) {
+    if (x < 0) {
+        return -x;  // Se x for negativo, retorna o valor positivo (inverte o sinal)
+    } else {
+        return x;   // Se x for positivo ou zero, retorna x como está
+    }
+}
+
+
+// Função para aplicar a habilidade do cone
+void aplicarCone(int tabuleiro[][TAMANHO_TABULEIRO], int origemLinha, int origemColuna, int altura) {
+    for (int i = 0; i < altura; i++) {
+        for (int j = origemColuna - i; j <= origemColuna + i; j++) {
+            if (origemLinha + i < TAMANHO_TABULEIRO && j >= 0 && j < TAMANHO_TABULEIRO) {
+                tabuleiro[origemLinha + i][j] = AFETADO_CONE;
+            }
+        }
+    }
+}
+// Função para aplicar a habilidade da cruz
+void aplicarCruz(int tabuleiro[][TAMANHO_TABULEIRO], int origemLinha, int origemColuna, int alcance) {
+    for (int j = origemColuna - alcance; j <= origemColuna + alcance; j++) {
+        if (origemLinha >= 0 && origemLinha < TAMANHO_TABULEIRO && j >= 0 && j < TAMANHO_TABULEIRO) {
+            tabuleiro[origemLinha][j] = AFETADO_CRUZ;
+        }
+    }
+
+    for (int i = origemLinha - alcance; i <= origemLinha + alcance; i++) {
+        if (i >= 0 && i < TAMANHO_TABULEIRO && origemColuna >= 0 && origemColuna < TAMANHO_TABULEIRO) {
+            tabuleiro[i][origemColuna] = AFETADO_CRUZ;
+        }
+    }
+}
+// Função para aplicar a habilidade do octaedro
+void aplicarOctaedro(int tabuleiro[][TAMANHO_TABULEIRO], int origemLinha, int origemColuna, int raio) {
+    for (int i = -raio; i <= raio; i++) {
+        for (int j = -raio; j <= raio; j++) {
+            if (valorAbsoluto(i) + valorAbsoluto(j) <= raio) {
+                int linha = origemLinha + i;
+                int coluna = origemColuna + j;
+                if (linha >= 0 && linha < TAMANHO_TABULEIRO && coluna >= 0 && coluna < TAMANHO_TABULEIRO) {
+                    tabuleiro[linha][coluna] = AFETADO_OCTAEDRO;
+                }
+            }
+        }
+    }
+}
+// Função para exibir o tabuleiro
+void exibirTabuleiro(int tabuleiro[][TAMANHO_TABULEIRO]) {
+    for (int i = 0; i < TAMANHO_TABULEIRO; i++) {
+        for (int j = 0; j < TAMANHO_TABULEIRO; j++) {
+            printf("%d ", tabuleiro[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
 
 int main() {
 
-// 1. Criar o tabuleiro com tudo 0 (água)
-    
+    // Inicializando o tabuleiro com zeros
     int tabuleiro[10][10];
-    
-    // Inicializar o tabuleiro com 0
-    for (int linha = 0; linha < 10; linha++) {         //O primeiro for percorre cada linha da matriz
-         for (int coluna = 0; coluna < 10; coluna++) { //O segundo for percorre cada coluna da linha atual
-            tabuleiro[linha][coluna] = 0;             //O comando tabuleiro[linha][coluna] = 0; coloca água (0) em cada posição
+
+    for (int linha = 0; linha < 10; linha++) {
+        for (int coluna = 0; coluna < 10; coluna++) {
+            tabuleiro[linha][coluna] = 0;
         }
     }
 
     printf("TABULEIRO INICIAL:\n\n");
-
     for (int linha = 0; linha < 10; linha++) {
-         for (int coluna = 0; coluna < 10; coluna++) {
-         printf("%d ", tabuleiro[linha][coluna]);
+        for (int coluna = 0; coluna < 10; coluna++) {
+            printf("%d ", tabuleiro[linha][coluna]);
         }
-         printf("\n");
+        printf("\n");
     }
 
+    // Colocando navios no tabuleiro
+    // Navio horizontal
+    for (int linha = 0; linha < 10; linha++) {
+        for (int coluna = 0; coluna < 10; coluna++) {
+            tabuleiro[linha][coluna] = 0;
+        }
+    }
 
-
-
-
-// 2. Tamanho fixo dos navios
     int tamanhoNavio = 3;
 
-
-
-// 3. Definir onde o navio horizontal vai começar
     int linhaHorizontal = 2;
-    int colunaHorizontal = 3;  
-    
-    //Linha 2 (ou seja, terceira linha, pois começa em 0)
-    //Coluna 3 (ou seja, quarta coluna)
-     
-
-    // Verificar se o navio cabe no tabuleiro na horizontal
+    int colunaHorizontal = 3;
     if (colunaHorizontal + tamanhoNavio <= 10) {
-        // Posicionar o navio horizontal
         for (int i = 0; i < tamanhoNavio; i++) {
             tabuleiro[linhaHorizontal][colunaHorizontal + i] = 3;
         }
-    }   else {
-        printf("Navio horizontal está fora do tabuleiro!\n");
-        
     }
 
-
-
-    // 4. Definir onde o navio vertical vai começar
+    // Navio vertical
     int linhaVertical = 5;
     int colunaVertical = 6;
-
-
-
-
-    // Verificar se o navio cabe no tabuleiro na vertical
     if (linhaVertical + tamanhoNavio <= 10) {
-        int podeColocar = 1; // sinal de que está tudo ok
-
-        // Verificar se tem outro navio no caminho
+        int podeColocar = 1;
         for (int i = 0; i < tamanhoNavio; i++) {
             if (tabuleiro[linhaVertical + i][colunaVertical] == 3) {
                 podeColocar = 0;
                 break;
             }
         }
-
-        // Se estiver tudo ok, colocar o navio vertical
         if (podeColocar) {
             for (int i = 0; i < tamanhoNavio; i++) {
                 tabuleiro[linhaVertical + i][colunaVertical] = 3;
             }
-        }   else {
-            printf("Navio vertical está colidindo com outro navio!\n");
-            return 1;
         }
-    }       else {
-            printf("Navio vertical está fora do tabuleiro!\n");
-            return 1;
     }
 
-// 5. Mostrar o tabuleiro
-    printf("\nTABULEIRO:\n\n");
-    for (int linha = 0; linha < 10; linha++) {
-        for (int coluna = 0; coluna < 10; coluna++) {
-            printf("%d ", tabuleiro[linha][coluna]);
-        }
-            printf("\n");
-    }
-
-        
-    
-// 6. Definir onde o navio diagonal principal vai começar
+    // Navio diagonal
     int linhaDiag1 = 0;
     int colunaDiag1 = 0;
-
-// Verificar se o navio diagonal principal cabe no tabuleiro
     if (linhaDiag1 + tamanhoNavio <= 10 && colunaDiag1 + tamanhoNavio <= 10) {
-    int podeColocar = 1;
-
-    // Verificar se tem outro navio no caminho
-    for (int i = 0; i < tamanhoNavio; i++) {
-         if (tabuleiro[linhaDiag1 + i][colunaDiag1 + i] == 3) {
-            podeColocar = 0;
-            break;
+        int podeColocar = 1;
+        for (int i = 0; i < tamanhoNavio; i++) {
+            if (tabuleiro[linhaDiag1 + i][colunaDiag1 + i] == 3) {
+                podeColocar = 0;
+                break;
+            }
+        }
+        if (podeColocar) {
+            for (int i = 0; i < tamanhoNavio; i++) {
+                tabuleiro[linhaDiag1 + i][colunaDiag1 + i] = 3;
+            }
         }
     }
 
-    // Se puder, coloca o navio na diagonal principal
-    if (podeColocar) {
-        for (int i = 0; i < tamanhoNavio; i++) {
-            tabuleiro[linhaDiag1 + i][colunaDiag1 + i] = 3;
-        }
-      } else {
-        printf("Navio diagonal está colidindo com outro navio!\n");
-      }
-      } else {
-        printf("Navio diagonal está fora do tabuleiro!\n");
-}
 
-
-// 7. Definir onde o navio diagonal secundária vai começar
+    // Navio diagonal 2
     int linhaDiag2 = 3;
     int colunaDiag2 = 6;
-
-// Verificar se o navio diagonal secundária cabe no tabuleiro
     if (linhaDiag2 + tamanhoNavio <= 10 && colunaDiag2 - tamanhoNavio + 1 >= 0) {
         int podeColocar = 1;
-
-    // Verificar se tem outro navio no caminho
-    for (int i = 0; i < tamanhoNavio; i++) {
-         if (tabuleiro[linhaDiag2 + i][colunaDiag2 - i] == 3) {
-            podeColocar = 0;
-            break;
-        }
-    }
-
-    // Se puder, coloca o navio na diagonal secundária
-    if (podeColocar) {
         for (int i = 0; i < tamanhoNavio; i++) {
-            tabuleiro[linhaDiag2 + i][colunaDiag2 - i] = 3;
+            if (tabuleiro[linhaDiag2 + i][colunaDiag2 - i] == 3) {
+                podeColocar = 0;
+                break;
+            }
         }
-    }   else {
-        printf("Navio diagonal está colidindo com outro navio!\n");
+        if (podeColocar) {
+            for (int i = 0; i < tamanhoNavio; i++) {
+                tabuleiro[linhaDiag2 + i][colunaDiag2 - i] = 3;
+            }
+        }
     }
-    }   else {
-        printf("Navio diagonal está fora do tabuleiro!\n");
-}
 
-     printf("\nTABULEIRO:\n\n");
-     
-     for (int linha = 0; linha < 10; linha++) {
-          for (int coluna = 0; coluna < 10; coluna++) {
-           printf("%d ", tabuleiro[linha][coluna]);
-    }
-     printf("\n");
-}
+    //Exibir o tabuleiro com os navios
+    printf("\nTABULEIRO COM NAVIOS:\n\n");
+    exibirTabuleiro(tabuleiro);
 
+
+    //Exibir o tabuleiro com as habilidades
+    int tabHabilidades[10][10] = {0};
+    
+    aplicarCone(tabHabilidades, 0, 4, 3);
+    aplicarCruz(tabHabilidades, 6, 2, 2);
+    aplicarOctaedro(tabHabilidades, 7, 7, 2);
+
+    printf("TABULEIRO COM AS 3 HABILIDADES JUNTAS (sem navios):\n\n");
+    exibirTabuleiro(tabHabilidades);
+
+    
     printf("===================\n");
     printf("Obrigado por jogar!\n");
     printf("Fim.\n");
